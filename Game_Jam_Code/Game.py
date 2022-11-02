@@ -43,23 +43,16 @@ class Player(pygame.sprite.Sprite):
         pressed_keys = pygame.key.get_pressed()
         if pressed_keys[K_UP]:
              self.rect.move_ip(0, -5)
-             pygame.transform.rotate(self.image, 180)
-             pygame.display.flip
         if pressed_keys[K_DOWN]:
              self.rect.move_ip(0,5)
-             pygame.transform.rotate(self.image, 180)
-             pygame.display.flip
+
          
         if self.rect.left > 0:
               if pressed_keys[K_LEFT]:
                   self.rect.move_ip(-5, 0)
-                  pygame.transform.rotate(self.image, 180)
-                  pygame.display.flip
         if self.rect.right < SCREEN_WIDTH:        
               if pressed_keys[K_RIGHT]:
                   self.rect.move_ip(5, 0)
-                  pygame.transform.rotate(self.image, 180)
-                  pygame.display.flip
 
     def draw(self, surface):
         surface.blit(self.image, self.rect)
@@ -68,8 +61,7 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, Player):
         super().__init__() 
         self.image = pygame.image.load("Enemy.png")
-        self.player = Player 
-        self.player.rect = self.player.get_rect()
+        self.player = Player
         self.rect = self.image.get_rect()
         self.rect.center=(random.randint(40,SCREEN_WIDTH-40),random.randint(40, SCREEN_HEIGHT-40)) 
 
@@ -84,12 +76,10 @@ class Enemy(pygame.sprite.Sprite):
         if (dirvect.x > 0 or dirvect.y > 0):
             dirvect.normalize()
             # Move along this normalized vector towards the player at current speed.
-            self.speed = 5
+            self.speed = 2
             dirvect.scale_to_length(self.speed)
             self.rect.move_ip(dirvect)
-        if (dirvect.x == 0 and dirvect.y == 0):
-            pygame.locals.QUIT()
-            sys.exit()
+        
     def draw(self, surface):
         surface.blit(self.image, self.rect) 
 
@@ -114,9 +104,13 @@ while True:
             if event.type == pygame.locals.QUIT:
                 pygame.quit()
                 sys.exit()
+            elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
+                print("test1")
+            elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3:
+                print("test3")
     P1.move()
-    E1.move(P1)
-    E2.move(P1)
+    E1.move()
+    E2.move()
     
      
     screen.fill(WHITE)
@@ -131,6 +125,7 @@ while True:
 
     #To be run if collision occurs between Player and Enemy
     if pygame.sprite.spritecollideany(P1, enemies):
+            """
             screen.fill(RED)
             pygame.display.update()
             for entity in all_sprites:
@@ -138,9 +133,8 @@ while True:
             time.sleep(2)
             pygame.quit()
             sys.exit()
-
+           """ 
 
 
     pygame.display.update()
     FramePerSec.tick(FPS) 
-    

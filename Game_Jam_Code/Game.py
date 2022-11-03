@@ -125,7 +125,7 @@ while True:
 
     #To be run if collision occurs between Player and Enemy
     if pygame.sprite.spritecollideany(P1, enemies):
-            """
+            
             screen.fill(RED)
             pygame.display.update()
             for entity in all_sprites:
@@ -133,7 +133,7 @@ while True:
             time.sleep(2)
             pygame.quit()
             sys.exit()
-           """ 
+          
 
 
     pygame.display.update()

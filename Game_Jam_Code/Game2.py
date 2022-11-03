@@ -43,10 +43,12 @@ class Player(pygame.sprite.Sprite):
  
     def move(self):
         pressed_keys = pygame.key.get_pressed()
-        if pressed_keys[K_UP]:
-             self.rect.move_ip(0, -5)
-        if pressed_keys[K_DOWN]:
-             self.rect.move_ip(0,5)
+        if self.rect.top :
+            if pressed_keys[K_UP]:
+                self.rect.move_ip(0, -5)
+        if self.rect.bottom > 0:
+            if pressed_keys[K_DOWN]:
+                self.rect.move_ip(0,5)
 
          
         if self.rect.left > 0:
@@ -63,14 +65,68 @@ class Player(pygame.sprite.Sprite):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         screen.blit(mousec, (mouse_x, mouse_y))
         rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
         pygame.display.update()
 
+   # def punch(self):
+
+class Enemy(pygame.sprite.Sprite):
+    def __init__(self, Player):
+        super().__init__() 
+        self.image = pygame.image.load("Enemy.png")
+        self.player = Player
+        self.rect = self.image.get_rect()
+        self.rect.center=(SCREEN_WIDTH/2, 100) 
+
+
+
+ 
+    def move(self):
+        # Find direction vector (dx, dy) between enemy and player.
+        
+
+        dirvect = pygame.math.Vector2(self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)
+
+        dirvect.normalize()
+        # Move along this normalized vector towards the player at current speed.
+        self.speed = 3
+        dirvect.scale_to_length(self.speed)
+        self.rect.move_ip(dirvect)
+
+    def stop(self):
+        #So that if the enemy gets within punching distance, it stops
+         self.rect.move_ip(0,0)
+
+
+    def look(self):
+
+        # Look at the player that the enemy is attacking 
+        dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
+        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
+        self.newimage = pygame.transform.rotate(self.image, int(angle))
+        rect = self.image.get_rect(center=self.rect.center)   
+        screen.blit(self.newimage,rect)
+        pygame.display.update()
+        
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect) 
+
+
+
+
 
 P1 = Player()
+E1 = Enemy(P1)
+#Creating Sprites Groups
+enemies = pygame.sprite.Group()
+enemies.add(E1)
+all_sprites = pygame.sprite.Group()
+all_sprites.add(P1, E1)
+
 
 while True:
     pygame.display.update()
@@ -86,10 +142,12 @@ while True:
     P1.move()
     screen.fill(WHITE)
     P1.look()
+    E1.look()
     
-
-
-    
+    if pygame.sprite.spritecollideany(P1, enemies):
+        E1.stop()
+    else:
+        E1.move()
     
               
 

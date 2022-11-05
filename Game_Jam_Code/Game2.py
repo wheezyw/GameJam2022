@@ -11,6 +11,7 @@ pygame.init()
 FPS = 60
 FramePerSec = pygame.time.Clock()
 punch_time = 0
+punch_time_E = 0
 
 # Making colors, the numbers correspond to RGB values
 BLACK = pygame.Color(0, 0, 0)         # Black
@@ -154,6 +155,7 @@ class Enemy(pygame.sprite.Sprite):
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
         pygame.display.update()
+        
 
     def reset_sprite(self):
         self.image = pygame.image.load("Enemy.png")
@@ -219,22 +221,19 @@ while True:
     
     if pygame.sprite.spritecollideany(P1, enemies):
         E1.stop()
-        E1.punch()
-        punch_time_E = pygame.time.get_ticks()
-        print(current_time - punch_time_E)
-        while True:
-            while current_time - punch_time_E < 150:
-                E1.stop()
-            while current_time - punch_time_E > 150:
-                print(current_time - punch_time_E)
-                E1.image = pygame.image.load("Enemy.png")
-                dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
-                angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
-                E1.newimage = pygame.transform.rotate(E1.image, int(angle))
-                rect = E1.image.get_rect(center=E1.rect.center)   
-                screen.blit(E1.newimage,rect)
-                pygame.display.update()
-                E1.stop()
+        if current_time - punch_time_E > 500:
+            E1.punch()
+            punch_time_E = pygame.time.get_ticks()
+        if  current_time - punch_time_E < 600:
+            print(current_time - punch_time_E)
+            E1.image = pygame.image.load("Enemy.png")
+            dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
+            angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
+            E1.newimage = pygame.transform.rotate(E1.image, int(angle))
+            rect = E1.image.get_rect(center=E1.rect.center)   
+            screen.blit(E1.newimage,rect)
+            pygame.display.update()
+            E1.stop()
         
     
 

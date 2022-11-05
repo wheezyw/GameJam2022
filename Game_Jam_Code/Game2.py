@@ -12,6 +12,7 @@ FPS = 60
 FramePerSec = pygame.time.Clock()
 punch_time = 0
 punch_time_E = 0
+Player_Health = 3
 
 # Making colors, the numbers correspond to RGB values
 BLACK = pygame.Color(0, 0, 0)         # Black
@@ -20,8 +21,8 @@ GREY = pygame.Color(128, 128, 128)   # Grey
 RED = pygame.Color(255, 0, 0)       # Red 
 
  # create a surface on screen that has the size of 400 x 600
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 1000
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(WHITE)
 
@@ -34,6 +35,8 @@ pygame.display.set_caption("Battle Royale")
 #Make mouse crosshair
 pygame.mouse.set_visible(False)
 mousec = pygame.image.load("mouse_C.png").convert_alpha()
+
+
 
 
 class Player(pygame.sprite.Sprite):
@@ -97,10 +100,16 @@ class Player(pygame.sprite.Sprite):
         #Put the new image in the same place as the old image
         screen.blit(self.newimage,rect)
         pygame.display.update()
+
+    def knockback(self):
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        #Replace it with crosshair (Need to update)
+        screen.blit(mousec, (mouse_x, mouse_y))
+        #Find the relative distance (normalized) from mouse to player
+        rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
+        self.rect.move_ip(-rel_x*.1, -rel_y*.1)
         
-        
-        
-    
+
                 
             
                 
@@ -114,6 +123,7 @@ class Enemy(pygame.sprite.Sprite):
         self.player = Player
         self.rect = self.image.get_rect()
         self.rect.center=(SCREEN_WIDTH/2, 100) 
+        
 
 
 
@@ -155,6 +165,7 @@ class Enemy(pygame.sprite.Sprite):
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
         pygame.display.update()
+
         
 
     def reset_sprite(self):
@@ -169,17 +180,50 @@ class Enemy(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.rect) 
 
+    def knockback(self):
+        dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
+        self.rect.move_ip(dirvect*.4)
 
+class Chair(pygame.sprite.Sprite):
+    def __init__(self, Player):
+        super().__init__() 
+        self.image = (pygame.image.load("Chair2x.png"))
+        self.rect = self.image.get_rect()
+        self.P_rect = Player.rect
+        self.rect.center = (self.P_rect.right + (self.rect.left / 2), self.P_rect.top + (self.rect.bottom / 2))
+        self.offset = pygame.math.Vector2(50, 0)
+        self.angle = 0
+        
+    def draw(self, surface):
+        surface.blit(self.image, self.rect) 
 
-
+    def rotate(self, surf, origin, pivot):
+        #Get the position of the mouse cursor
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        #Replace it with crosshair (Need to update)
+        screen.blit(mousec, (mouse_x, mouse_y))
+        #Find the relative distance (normalized) from mouse to player
+        rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
+        # Use tangent to find the angle that the sprite needs to be moved to face the mouse
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
+        image_rect = self.image.get_rect(topleft = (origin[0] - pivot[0], origin[1]-pivot[1]))
+        offset_center_to_pivot = pygame.math.Vector2(origin) - image_rect.center
+        rotated_offset = offset_center_to_pivot.rotate(-angle)
+        rotated_image_center = (origin[0] - rotated_offset.x, origin[1] - rotated_offset.y)
+        rotated_image = pygame.transform.rotate(self.image, angle)
+        rotated_image_rect = rotated_image.get_rect(center = rotated_image_center)
+        surf.blit(rotated_image, rotated_image_rect)
+        
+        
 
 P1 = Player()
 E1 = Enemy(P1)
+C1 = Chair(P1)
 #Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
 all_sprites = pygame.sprite.Group()
-all_sprites.add(P1, E1)
+all_sprites.add(P1, E1, C1)
 
 
 while True:
@@ -192,13 +236,19 @@ while True:
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
                 punch_time = pygame.time.get_ticks()
                 P1.punch()
+                if pygame.sprite.spritecollideany(P1, enemies):
+                    E1.knockback()
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3:
                 print("test3")
     
+    
     P1.move()
     screen.fill(WHITE)
+    C1.draw(screen)
+    C1.rotate(screen, P1.rect.center, C1.rect.bottomright)
     P1.look()
     E1.look()
+    
 
     if current_time - punch_time > 150:
         P1.image = pygame.image.load("King.png")
@@ -222,10 +272,11 @@ while True:
     if pygame.sprite.spritecollideany(P1, enemies):
         E1.stop()
         if current_time - punch_time_E > 500:
-            E1.punch()
-            punch_time_E = pygame.time.get_ticks()
-        if  current_time - punch_time_E < 600:
-            print(current_time - punch_time_E)
+            #E1.punch()
+            P1.knockback()
+            # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
+            E1.stop()
+        if  current_time - punch_time_E > 600:
             E1.image = pygame.image.load("Enemy.png")
             dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
             angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
@@ -234,12 +285,23 @@ while True:
             screen.blit(E1.newimage,rect)
             pygame.display.update()
             E1.stop()
+            punch_time_E = pygame.time.get_ticks()
         
+    #else:
+        #E1.move()
+
+    if Player_Health == 0:
+        screen.fill((0, 0, 0, 255), None, pygame.BLEND_RGBA_MULT)
+        screen.fill(RED[0:3] + (0,), None, pygame.BLEND_RGBA_ADD)
+        pygame.display.update()
+        for entity in all_sprites:
+            entity.kill() 
+        time.sleep(2)
+        pygame.quit()
+        sys.exit()        
+
     
 
-    else:
-        E1.move()
-    
     
 
     pygame.display.update()

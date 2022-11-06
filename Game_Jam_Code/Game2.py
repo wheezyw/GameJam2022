@@ -12,7 +12,7 @@ FPS = 60
 FramePerSec = pygame.time.Clock()
 punch_time = 0
 punch_time_E = 0
-Player_Health = 3
+Player_Health = 100
 
 # Making colors, the numbers correspond to RGB values
 BLACK = pygame.Color(0, 0, 0)         # Black
@@ -52,10 +52,10 @@ class Player(pygame.sprite.Sprite):
  
     def move(self):
         pressed_keys = pygame.key.get_pressed()
-        if self.rect.top < SCREEN_HEIGHT:
+        if self.rect.top > 0:
             if pressed_keys[K_UP]:
                 self.rect.move_ip(0, -5)
-        if self.rect.bottom > 0:
+        if self.rect.bottom < SCREEN_HEIGHT:
             if pressed_keys[K_DOWN]:
                 self.rect.move_ip(0,5)
 
@@ -93,7 +93,7 @@ class Player(pygame.sprite.Sprite):
         if Sprite_number == 0:
             self.image = pygame.image.load("King_Punch.png")
         if Sprite_number == 1:
-            self.image = pygame.image.load("King_chair_swing_2.png")
+            self.image = pygame.image.load("King_chair_swing_1.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
         screen.blit(mousec, (mouse_x, mouse_y))
@@ -115,9 +115,14 @@ class Player(pygame.sprite.Sprite):
         screen.blit(mousec, (mouse_x, mouse_y))
         #Find the relative distance (normalized) from mouse to player
         rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
-        self.rect.move_ip(-rel_x*.1, -rel_y*.1)
+        if self.rect.top > 0 and self.rect.bottom < SCREEN_HEIGHT and self.rect.left > 0 and self.rect.right < SCREEN_WIDTH:
+            self.rect.move_ip(-rel_x*.1, -rel_y*.1)
+        else:
+            self.rect.move_ip(0, 0)
         
-
+    def playerdeath(self):
+        self.image = pygame.image.load("King_holding_chair.png")
+        pygame.display.update()
                 
             
                 
@@ -132,16 +137,11 @@ class Enemy(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center=(SCREEN_WIDTH/2, 100) 
         
-
-
-
- 
     def move(self):
         # Find direction vector (dx, dy) between enemy and player.
         
 
         dirvect = pygame.math.Vector2(self.player.rect.x - self.rect.x, self.player.rect.y - self.rect.y)
-
         dirvect.normalize()
         # Move along this normalized vector towards the player at current speed.
         self.speed = 3
@@ -190,7 +190,34 @@ class Enemy(pygame.sprite.Sprite):
 
     def knockback(self):
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
-        self.rect.move_ip(dirvect*.4)
+
+        if self.rect.top > 0 and self.rect.bottom < SCREEN_HEIGHT and self.rect.left > 0 and self.rect.right < SCREEN_WIDTH:
+            if Sprite_number == 0:
+                if  SCREEN_WIDTH - self.rect.x + dirvect.x*.4 > 0 and SCREEN_WIDTH - self.rect.x + dirvect.x*.4 < SCREEN_WIDTH and SCREEN_HEIGHT - self.rect.y + dirvect.y*.4 > 0 and SCREEN_HEIGHT - self.rect.y + dirvect.y < SCREEN_HEIGHT:
+                    self.rect.move_ip(dirvect*.4)
+                elif SCREEN_WIDTH - self.rect.x + dirvect.x*.4 < 0 :
+                    self.rect.move_ip(SCREEN_WIDTH - 50, dirvect.y*.4)
+                elif SCREEN_WIDTH - self.rect.x + dirvect.x*.4> SCREEN_WIDTH:
+                    self.rect.move_ip(50, dirvect.y*.4)
+                elif SCREEN_HEIGHT - self.rect.y + dirvect.y*.4 < 0 :
+                    self.rect.move_ip(dirvect.x, SCREEN_HEIGHT - 50)
+                elif SCREEN_HEIGHT - self.rect.y + dirvect.y > SCREEN_HEIGHT:
+                    self.rect.move_ip(dirvect.x, 50)
+            if Sprite_number == 1:
+                if  SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 > 0 and SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 < SCREEN_WIDTH and SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5 > 0 and SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5 < SCREEN_HEIGHT:
+                    self.rect.move_ip(dirvect*1.5)
+                elif SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 < 0 :
+                    self.rect.move_ip(SCREEN_WIDTH - 50, dirvect.y*1.5)
+                elif SCREEN_WIDTH - self.rect.x + dirvect.x*1.5> SCREEN_WIDTH:
+                    self.rect.move_ip(50, dirvect.y*1.5)
+                elif SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5  < 0 :
+                    self.rect.move_ip(dirvect.x* 1.5, SCREEN_HEIGHT - 50)
+                elif SCREEN_HEIGHT - self.rect.y + dirvect.y * 1.5> SCREEN_HEIGHT:
+                    self.rect.move_ip(dirvect.x * 1.5, 50)
+        else:
+            self.rect.move_ip(0, 0)
+        
+        
 
 
 class Stationary(pygame.sprite.Sprite):       
@@ -247,7 +274,6 @@ while True:
     
 
     if current_time - punch_time > 150:
-        print(current_time - punch_time)
         if Sprite_number == 0:
             P1.image = pygame.image.load("King.png")
         if Sprite_number == 1:
@@ -273,6 +299,8 @@ while True:
         E1.stop()
         if current_time - punch_time_E > 500:
             E1.punch()
+            Player_Health -= 10
+            print(Player_Health )
             P1.knockback()
             # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
             E1.stop()
@@ -287,8 +315,8 @@ while True:
             E1.stop()
             punch_time_E = pygame.time.get_ticks()
         
-    #else:
-        #E1.move()
+    else:
+        E1.move()
 
     if Player_Health == 0:
         screen.fill((0, 0, 0, 255), None, pygame.BLEND_RGBA_MULT)

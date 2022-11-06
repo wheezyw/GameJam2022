@@ -37,12 +37,15 @@ pygame.mouse.set_visible(False)
 mousec = pygame.image.load("mouse_C.png").convert_alpha()
 
 
-
+Sprite_number = 0
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
-        self.image = pygame.image.load("King.png")
+        if Sprite_number == 0:
+            self.image = pygame.image.load("King.png")
+        if Sprite_number == 1:
+            self.image = pygame.image.load("King_holding_chair.png")
         self.rect = self.image.get_rect()
         self.rect.center = (160, 520)
         
@@ -68,6 +71,8 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
     def look(self):
+        if Sprite_number == 1:
+            self.image = pygame.image.load("King_holding_chair.png")
         #Get the position of the mouse cursor
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
@@ -85,7 +90,10 @@ class Player(pygame.sprite.Sprite):
         pygame.display.update()
 
     def punch(self):
-        self.image = pygame.image.load("King_Punch.png")
+        if Sprite_number == 0:
+            self.image = pygame.image.load("King_Punch.png")
+        if Sprite_number == 1:
+            self.image = pygame.image.load("King_chair_swing_2.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
         screen.blit(mousec, (mouse_x, mouse_y))
@@ -198,10 +206,12 @@ class Stationary(pygame.sprite.Sprite):
 
 P1 = Player()
 E1 = Enemy(P1)
-C1 = Stationary((160, 420))
+Chair1 = Stationary((160, 420))
 #Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
+stationaries = pygame.sprite.Group()
+stationaries.add(Chair1)
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1, E1)
 
@@ -219,17 +229,29 @@ while True:
                 if pygame.sprite.spritecollideany(P1, enemies):
                     E1.knockback()
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3:
-                print("test3")
+                if pygame.sprite.spritecollideany(P1, stationaries):
+                    if Sprite_number == 0:
+                        Sprite_number = 1
+                        Chair1.image = pygame.image.load("clear_block.png")
+                        Chair1.rect.center = (SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2)
+                elif Sprite_number == 1:
+                    Sprite_number = 0
+                    Chair1.image = pygame.image.load("Chair_sprite.png")
+                    Chair1.rect.center = (P1.rect.x + 50, P1.rect.y)
     
     screen.fill(WHITE)
     P1.move()
-    C1.draw(screen)
+    Chair1.draw(screen)
     P1.look()
     E1.look()
     
 
     if current_time - punch_time > 150:
-        P1.image = pygame.image.load("King.png")
+        print(current_time - punch_time)
+        if Sprite_number == 0:
+            P1.image = pygame.image.load("King.png")
+        if Sprite_number == 1:
+            P1.image = pygame.image.load("King_holding_chair.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
         screen.blit(mousec, (mouse_x, mouse_y))
@@ -265,8 +287,8 @@ while True:
             E1.stop()
             punch_time_E = pygame.time.get_ticks()
         
-    else:
-        E1.move()
+    #else:
+        #E1.move()
 
     if Player_Health == 0:
         screen.fill((0, 0, 0, 255), None, pygame.BLEND_RGBA_MULT)

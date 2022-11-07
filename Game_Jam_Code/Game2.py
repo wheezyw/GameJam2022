@@ -21,31 +21,33 @@ GREY = pygame.Color(128, 128, 128)   # Grey
 RED = pygame.Color(255, 0, 0)       # Red 
 
  # create a surface on screen that has the size of 400 x 600
-SCREEN_WIDTH = 400
-SCREEN_HEIGHT = 600
+SCREEN_WIDTH = 1000
+SCREEN_HEIGHT = 1000
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 screen.fill(WHITE)
 
 # load and set the logo
-logo = pygame.image.load(r"Logo.png")
+logo = pygame.image.load("Images/Logo.png")
 pygame.display.set_icon(logo)
 pygame.display.set_caption("Battle Royale")
 
 
 #Make mouse crosshair
 pygame.mouse.set_visible(False)
-mousec = pygame.image.load("mouse_C.png").convert_alpha()
+mousec = pygame.image.load("Images/mouse_C.png").convert_alpha()
 
+# make background
 
+#Sprite Number controls the weapons that the player is holding and the animations
 Sprite_number = 0
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
         if Sprite_number == 0:
-            self.image = pygame.image.load("King.png")
+            self.image = pygame.image.load("Images/King.png")
         if Sprite_number == 1:
-            self.image = pygame.image.load("King_holding_chair.png")
+            self.image = pygame.image.load("Images/King_holding_chair.png")
         self.rect = self.image.get_rect()
         self.rect.center = (160, 520)
         
@@ -71,8 +73,6 @@ class Player(pygame.sprite.Sprite):
         surface.blit(self.image, self.rect)
 
     def look(self):
-        if Sprite_number == 1:
-            self.image = pygame.image.load("King_holding_chair.png")
         #Get the position of the mouse cursor
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
@@ -91,9 +91,9 @@ class Player(pygame.sprite.Sprite):
 
     def punch(self):
         if Sprite_number == 0:
-            self.image = pygame.image.load("King_Punch.png")
+            self.image = pygame.image.load("Images/King_Punch.png")
         if Sprite_number == 1:
-            self.image = pygame.image.load("King_chair_swing_1.png")
+            self.image = pygame.image.load("Images/King_chair_swing_2.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
         screen.blit(mousec, (mouse_x, mouse_y))
@@ -121,7 +121,7 @@ class Player(pygame.sprite.Sprite):
             self.rect.move_ip(0, 0)
         
     def playerdeath(self):
-        self.image = pygame.image.load("King_holding_chair.png")
+        self.image = pygame.image.load("Images/King_Dead_64.png")
         pygame.display.update()
                 
             
@@ -131,7 +131,7 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, Player):
         super().__init__() 
-        self.image = pygame.image.load("Enemy.png")
+        self.image = pygame.image.load("Images/Enemy.png")
         self.last = pygame.time.get_ticks()
         self.player = Player
         self.rect = self.image.get_rect()
@@ -166,7 +166,7 @@ class Enemy(pygame.sprite.Sprite):
     def punch(self):
 
         # Look at the player that the enemy is attacking 
-        self.image = pygame.image.load("Enemy_Punch.png")
+        self.image = pygame.image.load("Images/Enemy_Punch.png")
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
         angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
         self.newimage = pygame.transform.rotate(self.image, int(angle))
@@ -177,7 +177,7 @@ class Enemy(pygame.sprite.Sprite):
         
 
     def reset_sprite(self):
-        self.image = pygame.image.load("Enemy.png")
+        self.image = pygame.image.load("Images/Enemy.png")
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
         angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
         self.newimage = pygame.transform.rotate(self.image, int(angle))
@@ -204,15 +204,15 @@ class Enemy(pygame.sprite.Sprite):
                 elif SCREEN_HEIGHT - self.rect.y + dirvect.y > SCREEN_HEIGHT:
                     self.rect.move_ip(dirvect.x, 50)
             if Sprite_number == 1:
-                if  SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 > 0 and SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 < SCREEN_WIDTH and SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5 > 0 and SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5 < SCREEN_HEIGHT:
+                if  SCREEN_WIDTH - (self.rect.x + dirvect.x*1.5) > 0 and SCREEN_WIDTH - (self.rect.x + dirvect.x*1.5) < SCREEN_WIDTH and SCREEN_HEIGHT - (self.rect.y + dirvect.y*1.5) > 0 and SCREEN_HEIGHT - (self.rect.y + dirvect.y*1.5) < SCREEN_HEIGHT:
                     self.rect.move_ip(dirvect*1.5)
-                elif SCREEN_WIDTH - self.rect.x + dirvect.x*1.5 < 0 :
+                elif SCREEN_WIDTH - (self.rect.x + dirvect.x*1.5) < 0 :
                     self.rect.move_ip(SCREEN_WIDTH - 50, dirvect.y*1.5)
-                elif SCREEN_WIDTH - self.rect.x + dirvect.x*1.5> SCREEN_WIDTH:
+                elif SCREEN_WIDTH - (self.rect.x + dirvect.x*1.5)> SCREEN_WIDTH:
                     self.rect.move_ip(50, dirvect.y*1.5)
-                elif SCREEN_HEIGHT - self.rect.y + dirvect.y*1.5  < 0 :
+                elif SCREEN_HEIGHT - (self.rect.y + dirvect.y*1.5)  < 0 :
                     self.rect.move_ip(dirvect.x* 1.5, SCREEN_HEIGHT - 50)
-                elif SCREEN_HEIGHT - self.rect.y + dirvect.y * 1.5> SCREEN_HEIGHT:
+                elif SCREEN_HEIGHT - (self.rect.y + dirvect.y * 1.5)> SCREEN_HEIGHT:
                     self.rect.move_ip(dirvect.x * 1.5, 50)
         else:
             self.rect.move_ip(0, 0)
@@ -223,13 +223,17 @@ class Enemy(pygame.sprite.Sprite):
 class Stationary(pygame.sprite.Sprite):       
     def __init__(self, vector):
         super().__init__() 
-        self.image = pygame.image.load("Chair_sprite.png")
+        self.image = pygame.image.load("Images/Chair_sprite.png")
         self.rect = self.image.get_rect()
         self.rect.center = (vector) 
 
     def draw(self, surface):
         surface.blit(self.image, self.rect) 
         pygame.display.update()
+
+    def stop(self):
+        #So that if the enemy gets within punching distance, it stops
+         self.rect.move_ip(0,0)
 
 P1 = Player()
 E1 = Enemy(P1)
@@ -240,7 +244,12 @@ enemies.add(E1)
 stationaries = pygame.sprite.Group()
 stationaries.add(Chair1)
 all_sprites = pygame.sprite.Group()
-all_sprites.add(P1, E1)
+all_sprites.add(P1, enemies, stationaries)
+
+
+
+
+
 
 
 while True:
@@ -259,11 +268,11 @@ while True:
                 if pygame.sprite.spritecollideany(P1, stationaries):
                     if Sprite_number == 0:
                         Sprite_number = 1
-                        Chair1.image = pygame.image.load("clear_block.png")
+                        Chair1.image = pygame.image.load("Images/clear_block.png")
                         Chair1.rect.center = (SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2)
                 elif Sprite_number == 1:
                     Sprite_number = 0
-                    Chair1.image = pygame.image.load("Chair_sprite.png")
+                    Chair1.image = pygame.image.load("Images/Chair_sprite.png")
                     Chair1.rect.center = (P1.rect.x + 50, P1.rect.y)
     
     screen.fill(WHITE)
@@ -275,9 +284,9 @@ while True:
 
     if current_time - punch_time > 150:
         if Sprite_number == 0:
-            P1.image = pygame.image.load("King.png")
+            P1.image = pygame.image.load("Images/King.png")
         if Sprite_number == 1:
-            P1.image = pygame.image.load("King_holding_chair.png")
+            P1.image = pygame.image.load("Images/King_holding_chair.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
         #Replace it with crosshair (Need to update)
         screen.blit(mousec, (mouse_x, mouse_y))
@@ -305,7 +314,7 @@ while True:
             # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
             E1.stop()
         if  current_time - punch_time_E > 600:
-            E1.image = pygame.image.load("Enemy.png")
+            E1.image = pygame.image.load("Images/Enemy.png")
             dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
             angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
             E1.newimage = pygame.transform.rotate(E1.image, int(angle))
@@ -318,15 +327,14 @@ while True:
     else:
         E1.move()
 
-    if Player_Health == 0:
-        screen.fill((0, 0, 0, 255), None, pygame.BLEND_RGBA_MULT)
-        screen.fill(RED[0:3] + (0,), None, pygame.BLEND_RGBA_ADD)
+    while Player_Health == 0:
+        E1.stop()
+        P1.playerdeath()
+        screen.blit(pygame.image.load("Images/Game_Over_Screen.png"), (0, 0))
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        #Replace it with crosshair (Need to update)
+        screen.blit(mousec, (mouse_x, mouse_y))
         pygame.display.update()
-        for entity in all_sprites:
-            entity.kill() 
-        time.sleep(2)
-        pygame.quit()
-        sys.exit()        
 
     
 

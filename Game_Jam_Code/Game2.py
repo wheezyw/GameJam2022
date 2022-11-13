@@ -41,6 +41,12 @@ mousec = pygame.image.load("Images/mouse_C.png").convert_alpha()
 #Sprite Number controls the weapons that the player is holding and the animations
 Sprite_number = 0
 
+# Make reset event
+
+
+
+#Make Classes
+
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
@@ -221,9 +227,9 @@ class Enemy(pygame.sprite.Sprite):
 
 
 class Stationary(pygame.sprite.Sprite):       
-    def __init__(self, vector):
+    def __init__(self, vector, image):
         super().__init__() 
-        self.image = pygame.image.load("Images/Chair_sprite.png")
+        self.image = pygame.image.load(image)
         self.rect = self.image.get_rect()
         self.rect.center = (vector) 
 
@@ -235,9 +241,14 @@ class Stationary(pygame.sprite.Sprite):
         #So that if the enemy gets within punching distance, it stops
          self.rect.move_ip(0,0)
 
+
+
+
 P1 = Player()
 E1 = Enemy(P1)
-Chair1 = Stationary((160, 420))
+Chair1 = Stationary((160, 420), "Images/Chair2x.png" )
+No_Button = Stationary ((700, 575), "Images/No_3.png")
+Yes_Button = Stationary((300, 575), "Images/Yes_4.png")
 #Creating Sprites Groups
 enemies = pygame.sprite.Group()
 enemies.add(E1)
@@ -306,14 +317,14 @@ while True:
     
     if pygame.sprite.spritecollideany(P1, enemies):
         E1.stop()
-        if current_time - punch_time_E > 500:
+        if current_time - punch_time_E > 200:
             E1.punch()
-            Player_Health -= 10
-            print(Player_Health )
             P1.knockback()
             # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
             E1.stop()
-        if  current_time - punch_time_E > 600:
+            Player_Health -= 10
+            print(Player_Health)
+        if  current_time - punch_time_E > 400:
             E1.image = pygame.image.load("Images/Enemy.png")
             dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
             angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
@@ -327,15 +338,30 @@ while True:
     else:
         E1.move()
 
-    while Player_Health == 0:
+    if Player_Health == 0:
+        Game_Over_Screen = pygame.image.load("Images/Game_Over_Screen2.png")
+        Game_Over_Screen = pygame.transform.scale(Game_Over_Screen, (1000,1000))
+        GOScreen_rect = Game_Over_Screen.get_rect()
+        screen.blit(Game_Over_Screen, GOScreen_rect)
         E1.stop()
         P1.playerdeath()
-        screen.blit(pygame.image.load("Images/Game_Over_Screen.png"), (0, 0))
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        #Replace it with crosshair (Need to update)
-        screen.blit(mousec, (mouse_x, mouse_y))
-        pygame.display.update()
-
+        while True:
+            screen.blit(Game_Over_Screen, GOScreen_rect)
+            screen.blit(No_Button.image, No_Button.rect)
+            screen.blit(Yes_Button.image, Yes_Button.rect)
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            #Replace it with crosshair (Need to update)
+            screen.blit(mousec, (mouse_x, mouse_y))
+            mouserect = pygame.draw.rect(screen, BLACK, pygame.Rect(-1, 1, 60, 60))
+            pygame.display.update()
+            if event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
+                if  pygame.Rect.colliderect(mousec.get_rect(), No_Button.rect) == True:
+                    pygame.quit()
+                    sys.exit()
+            for event in pygame.event.get():
+                if event.type == pygame.locals.QUIT:
+                    pygame.quit()
+                    sys.exit()
     
 
     

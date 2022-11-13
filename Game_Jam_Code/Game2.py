@@ -19,6 +19,7 @@ BLACK = pygame.Color(0, 0, 0)         # Black
 WHITE = pygame.Color(255, 255, 255)   # White
 GREY = pygame.Color(128, 128, 128)   # Grey
 RED = pygame.Color(255, 0, 0)       # Red 
+YELLOW = pygame.Color(62, 63, 10)
 
  # create a surface on screen that has the size of 400 x 600
 SCREEN_WIDTH = 1000
@@ -41,9 +42,16 @@ mousec = pygame.image.load("Images/mouse_C.png").convert_alpha()
 #Sprite Number controls the weapons that the player is holding and the animations
 Sprite_number = 0
 
-# Make reset event
 
 
+#Controls the Main Loop
+main = True
+
+# Make "Mouse Collision" function
+def mouse_collision(topleft, bottomright):
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    if topleft[1] - mouse_y <  0 and  bottomright[1] - mouse_y > 0 and topleft[0] - mouse_x < 0 and bottomright[0] - mouse_x > 0:
+        return True
 
 #Make Classes
 
@@ -135,13 +143,13 @@ class Player(pygame.sprite.Sprite):
 
 
 class Enemy(pygame.sprite.Sprite):
-    def __init__(self, Player):
+    def __init__(self, Player, vector):
         super().__init__() 
         self.image = pygame.image.load("Images/Enemy.png")
         self.last = pygame.time.get_ticks()
         self.player = Player
         self.rect = self.image.get_rect()
-        self.rect.center=(SCREEN_WIDTH/2, 100) 
+        self.rect.center= (vector) 
         
     def move(self):
         # Find direction vector (dx, dy) between enemy and player.
@@ -245,25 +253,32 @@ class Stationary(pygame.sprite.Sprite):
 
 
 P1 = Player()
-E1 = Enemy(P1)
-Chair1 = Stationary((160, 420), "Images/Chair2x.png" )
+E1 = Enemy(P1, (400, 600))
+E2 = Enemy(P1, (600, 600))
+Chair1 = Stationary((160, 420), "Images/Chair_sprite.png" )
 No_Button = Stationary ((700, 575), "Images/No_3.png")
 Yes_Button = Stationary((300, 575), "Images/Yes_4.png")
 #Creating Sprites Groups
 enemies = pygame.sprite.Group()
-enemies.add(E1)
+enemies.add(E1, E2)
 stationaries = pygame.sprite.Group()
 stationaries.add(Chair1)
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1, enemies, stationaries)
 
 
+# Make reset event 
+def Game_reset():
+    P1.rect.center = (160, 520)
+    E1.rect.center=  (400, 600)
+    E1.image = pygame.image.load("Images/Enemy.png")
+    E2.rect.center=  (600, 600)
+    E2.image = pygame.image.load("Images/Enemy.png")
+    Chair1.rect.center = (160, 420)
+    Chair1.image = pygame.image.load("Images/Chair_sprite.png")
+    
 
-
-
-
-
-while True:
+while main:
     pygame.display.update()
     current_time = pygame.time.get_ticks()
     for event in pygame.event.get():
@@ -275,6 +290,8 @@ while True:
                 P1.punch()
                 if pygame.sprite.spritecollideany(P1, enemies):
                     E1.knockback()
+                if pygame.sprite.spritecollideany(P1, enemies):
+                    E2.knockback()
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3:
                 if pygame.sprite.spritecollideany(P1, stationaries):
                     if Sprite_number == 0:
@@ -291,6 +308,8 @@ while True:
     Chair1.draw(screen)
     P1.look()
     E1.look()
+    E2.look()
+    print(current_time - punch_time_E)
     
 
     if current_time - punch_time > 150:
@@ -317,14 +336,18 @@ while True:
     
     if pygame.sprite.spritecollideany(P1, enemies):
         E1.stop()
-        if current_time - punch_time_E > 200:
+        if current_time - punch_time_E > 800:
             E1.punch()
+            print("punch")
+            punch_time_E = pygame.time.get_ticks()
             P1.knockback()
             # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
             E1.stop()
-            Player_Health -= 10
+            Player_Health -= 100
             print(Player_Health)
-        if  current_time - punch_time_E > 400:
+        if  current_time - punch_time_E > 200:
+            print("no punch")
+            print(current_time - punch_time_E)
             E1.image = pygame.image.load("Images/Enemy.png")
             dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
             angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
@@ -333,8 +356,9 @@ while True:
             screen.blit(E1.newimage,rect)
             pygame.display.update()
             E1.stop()
-            punch_time_E = pygame.time.get_ticks()
-        
+    
+    
+    
     else:
         E1.move()
 
@@ -345,19 +369,28 @@ while True:
         screen.blit(Game_Over_Screen, GOScreen_rect)
         E1.stop()
         P1.playerdeath()
-        while True:
+        main = False
+        while main == False:
             screen.blit(Game_Over_Screen, GOScreen_rect)
             screen.blit(No_Button.image, No_Button.rect)
             screen.blit(Yes_Button.image, Yes_Button.rect)
             mouse_x, mouse_y = pygame.mouse.get_pos()
             #Replace it with crosshair (Need to update)
             screen.blit(mousec, (mouse_x, mouse_y))
-            mouserect = pygame.draw.rect(screen, BLACK, pygame.Rect(-1, 1, 60, 60))
-            pygame.display.update()
-            if event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
-                if  pygame.Rect.colliderect(mousec.get_rect(), No_Button.rect) == True:
+            pygame.display.update() 
+            if mouse_collision(No_Button.rect.topleft, No_Button.rect.bottomright):
+                # Replace the Button with Yellow highlighted Button, same with Yes Button
+                if  event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
                     pygame.quit()
                     sys.exit()
+            if mouse_collision(Yes_Button.rect.topleft, Yes_Button.rect.bottomright):
+                if  event.type == event.type == MOUSEBUTTONDOWN and event.button == 1:
+                    print("Yes")
+                    Game_reset()
+                    Player_Health = 100
+                    Sprite_number = 0
+                    punch_time_E = pygame.time.get_ticks()
+                    main = True
             for event in pygame.event.get():
                 if event.type == pygame.locals.QUIT:
                     pygame.quit()

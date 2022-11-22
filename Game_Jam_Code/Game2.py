@@ -10,9 +10,12 @@ pygame.init()
 
 FPS = 60
 FramePerSec = pygame.time.Clock()
-punch_time = 0
+punch_time = 400
 punch_time_E = 0
 Player_Health = 100
+P1_Punched = 1
+bg = pygame.image.load("Images/stage.png")
+chairthrow = 0
 
 # Making colors, the numbers correspond to RGB values
 BLACK = pygame.Color(0, 0, 0)         # Black
@@ -47,6 +50,15 @@ Sprite_number = 0
 #Controls the Main Loop
 main = True
 
+# Make a Time function that executes a function once every x milliseconds
+
+def Timer(milliseconds, timerTime):
+    if current_time - timerTime > milliseconds:
+        return True
+    else:
+        return False
+
+
 # Make "Mouse Collision" function
 def mouse_collision(topleft, bottomright):
     mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -70,7 +82,7 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
         if Sprite_number == 0:
-            self.image = pygame.image.load("Images/King.png")
+            self.image = pygame.image.load("Images/RedIdle.png")
         if Sprite_number == 1:
             self.image = pygame.image.load("Images/King_holding_chair.png")
         self.rect = self.image.get_rect()
@@ -106,7 +118,7 @@ class Player(pygame.sprite.Sprite):
         #Find the relative distance (normalized) from mouse to player
         rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
         # Use tangent to find the angle that the sprite needs to be moved to face the mouse
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)   
         #This is a new image that rotates the old image
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         #This is the position of the old image
@@ -125,7 +137,7 @@ class Player(pygame.sprite.Sprite):
         #Find the relative distance (normalized) from mouse to player
         rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
         # Use tangent to find the angle that the sprite needs to be moved to face the mouse
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)   
         #This is a new image that rotates the old image
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         #This is the position of the old image
@@ -139,12 +151,10 @@ class Player(pygame.sprite.Sprite):
         if Sprite_number == 1:
             self.image = pygame.image.load("Images/King_chair_swing_2.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        #Replace it with crosshair (Need to update)
-        screen.blit(mousec, (mouse_x, mouse_y))
         #Find the relative distance (normalized) from mouse to player
         rel_x, rel_y = mouse_x - self.rect.x, mouse_y - self.rect.y
         # Use tangent to find the angle that the sprite needs to be moved to face the mouse
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)  
         #This is a new image that rotates the old image
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         #This is the position of the old image
@@ -176,7 +186,7 @@ class Player(pygame.sprite.Sprite):
 class Enemy(pygame.sprite.Sprite):
     def __init__(self, Player, vector):
         super().__init__() 
-        self.image = pygame.image.load("Images/Enemy.png")
+        self.image = pygame.image.load("Images/GreenIdle.png")
         self.last = pygame.time.get_ticks()
         self.player = Player
         self.rect = self.image.get_rect()
@@ -204,18 +214,30 @@ class Enemy(pygame.sprite.Sprite):
 
         # Look at the player that the enemy is attacking 
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
-        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
+        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y) + 90
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
 
+    def beforePunch(self):
+        if Sprite_number == 0:
+            self.image = pygame.image.load("Images/GreenPunch.png")
+        if Sprite_number == 1:
+            self.image = pygame.image.load("Images/King_chair_swing_2.png")
+        dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
+        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y) + 90
+        self.newimage = pygame.transform.rotate(self.image, int(angle))
+        #This is the position of the old image
+        rect = self.image.get_rect(center=self.rect.center)   
+        #Put the new image in the same place as the old image
+        screen.blit(self.newimage,rect)
 
     def punch(self):
 
         # Look at the player that the enemy is attacking 
-        self.image = pygame.image.load("Images/Enemy_Punch.png")
+        self.image = pygame.image.load("Images/GreenPunch3.png")
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
-        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
+        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y) 
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
@@ -224,9 +246,9 @@ class Enemy(pygame.sprite.Sprite):
         
 
     def reset_sprite(self):
-        self.image = pygame.image.load("Images/Enemy.png")
+        self.image = pygame.image.load("Images/GreenIdle.png")
         dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
-        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
+        angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y) + 90
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         rect = self.image.get_rect(center=self.rect.center)   
         screen.blit(self.newimage,rect)
@@ -289,8 +311,17 @@ class Stationary(pygame.sprite.Sprite):
         #So that if the enemy gets within punching distance, it stops
          self.rect.move_ip(0,0)
 
-
-
+    def throw(self, mouse_x, mouse_y):
+        
+        if Chair1.rect.x - mouse_x < 0:
+            Chair1.rect.move_ip(5,0)
+        if Chair1.rect.x - mouse_x > 0:
+            Chair1.rect.move_ip(-5,0)
+        if Chair1.rect.y - mouse_y < 0:
+            Chair1.rect.move_ip(0,5)
+        if Chair1.rect.y - mouse_y > 0:
+            Chair1.rect.move_ip(0,-5)
+        
 
 P1 = Player()
 E1 = Enemy(P1, (400, 600))
@@ -314,7 +345,7 @@ def Game_reset():
     P1.rect.center = (160, 520)
 
     E1.rect.center=  (400, 600)
-    E1.image = pygame.image.load("Images/Enemy.png")
+    E1.image = pygame.image.load("Images/GreenIdle.png")
     E1.isdead = False
 
     E2.rect.center=  (600, 600)
@@ -325,20 +356,15 @@ def Game_reset():
     Chair1.image = pygame.image.load("Images/Chair_sprite.png")
 
 
-def getCurrentTime(seconds):
-    return pygame.time.get_ticks()
-
-# Usage: Call this function with the specified number of seconds, and this function will return the milliseconds. Do this to think in seconds rather than milliseconds.
-def seconds(secondsInteger):
-    milliseconds = secondsInteger * 1000
-    return milliseconds
-
 
 
 
 while main:
-    pygame.display.update()
+    pygame.display.flip()
     screen.fill(WHITE)
+    bg = pygame.transform.scale(bg, (1000,1000))
+    bg_rect = bg.get_rect()
+    screen.blit(bg, bg_rect)
     current_time = pygame.time.get_ticks()
     for event in pygame.event.get():
             if event.type == pygame.locals.QUIT:
@@ -346,21 +372,14 @@ while main:
                 sys.exit()
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 1 and P1.isdead == False:
                 punch_time = pygame.time.get_ticks()
-                P1.punch()
-                if pygame.sprite.collide_rect(P1, E1):
-                    E1.knockback()
-                    if Sprite_number == 0:
-                        E1_Health -= 10
-                        print(E1_Health)
-                    if Sprite_number == 1:
-                        E1_Health -= 30
-                        print(E1_Health)
+                
+            
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3 and P1.isdead == False:
                 if pygame.sprite.spritecollideany(P1, stationaries):
                     if Sprite_number == 0:
                         Sprite_number = 1
+                        oldchair_rect_center = Chair1.rect.center
                         Chair1.image = pygame.image.load("Images/clear_block.png")
-                        Chair1.rect.center = (SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2)
                 elif Sprite_number == 1:
                     Sprite_number = 0
                     Chair1.image = pygame.image.load("Images/Chair_sprite.png")
@@ -368,19 +387,11 @@ while main:
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 2 and P1.isdead == False:
                 if Sprite_number == 1:
                     Sprite_number = 0
+                    Chair1.rect.center = (P1.rect.x, P1.rect.y)
                     Chair1.image = pygame.image.load("Images/Chair_sprite.png")
-                    mouse_x, mouse_y = pygame.mouse.get_pos()
-                    rel_x, rel_y = mouse_x - P1.rect.x, mouse_y - P1.rect.y
-                    angle = -math.atan2(rel_y, rel_x) 
-                    angle_x = math.sin(angle)
-                    angle_y = math.cos(angle)
-                    Chair1.rect.center = (P1.rect.x + (angle_x * 10), P1.rect.y + (angle_y * 10))
-                    print(angle)
-                    print(P1.rect.x)
-                    print(P1.rect.x + (angle_x * 10))
-                    print((angle_x * 10))
-
-    
+                    chair_mouse_x, chair_mouse_y = pygame.mouse.get_pos()
+                    chairthrow = 1
+                    
     
     
     Chair1.draw(screen)
@@ -389,10 +400,9 @@ while main:
         P1.move()
     else:
         P1.draw(screen)
-        print(P1.isdead)
     if E1.isdead == False:
         E1.look()
-    else:
+    if E1.isdead == True:
         E1.draw(screen)
     # Add Player Health in the top right corner
     # Make Player Health Display
@@ -402,10 +412,23 @@ while main:
     textRect.center = (100, 100)
     screen.blit(text, textRect)
     
-
-    if current_time - punch_time > 150 and P1.isdead == False:
+    if current_time - punch_time < 150 and P1_Punched == 0:
+        P1.beforePunch()
+    if current_time - punch_time > 150 and current_time - punch_time < 300 and P1_Punched == 0:
+        P1.punch()
+        if pygame.sprite.collide_rect(P1, E1):
+            E1.knockback()
+            if Sprite_number == 0:
+                E1_Health -= 10
+                print(E1_Health)
+            if Sprite_number == 1:
+                E1_Health -= 30
+                print(E1_Health)
+        P1_Punched = 1
+    if current_time - punch_time > 300 and P1.isdead == False:
+        P1_Punched = 0
         if Sprite_number == 0:
-            P1.image = pygame.image.load("Images/King.png")
+            P1.image = pygame.image.load("Images/RedIdle.png")
         if Sprite_number == 1:
             P1.image = pygame.image.load("Images/King_holding_chair.png")
         mouse_x, mouse_y = pygame.mouse.get_pos()
@@ -414,7 +437,7 @@ while main:
         #Find the relative distance (normalized) from mouse to player
         rel_x, rel_y = mouse_x - P1.rect.x, mouse_y - P1.rect.y
         # Use tangent to find the angle that the sprite needs to be moved to face the mouse
-        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x) - 90  
+        angle = (180 / math.pi) * -math.atan2(rel_y, rel_x)  
         #This is a new image that rotates the old image
         P1.newimage = pygame.transform.rotate(P1.image, int(angle))
         #This is the position of the old image
@@ -427,36 +450,39 @@ while main:
     
     if pygame.sprite.collide_rect(P1, E1):
         E1.stop()
+        if current_time - punch_time_E < 800 and current_time - punch_time_E > 400 and E1.isdead == False:
+            E1.beforePunch()
+            print(current_time - punch_time_E)
+            pygame.display.update()
         if current_time - punch_time_E > 800 and P1.isdead == False and E1.isdead == False:
             E1.punch()
-            print("punch")
+            print(current_time - punch_time_E)
             punch_time_E = pygame.time.get_ticks()
             Game_Over_Time = pygame.time.get_ticks()
-            print(P1.isdead)
             P1.knockback()
-            # Because the current_time - punch time will always be 500 or less, the sprite gets replaced immediately. Fix this later
             E1.stop()
             Player_Health -= 10
-            print(Player_Health)
-    if  current_time - punch_time_E > 200 and P1.isdead == False and E1.isdead == False:
-            print(current_time - punch_time_E)
-            E1.image = pygame.image.load("Images/Enemy.png")
-            dirvect = pygame.math.Vector2(E1.rect.x - P1.rect.x, E1.rect.y - P1.rect.y)
-            angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y)
-            E1.newimage = pygame.transform.rotate(E1.image, int(angle))
-            rect = E1.image.get_rect(center=E1.rect.center)   
-            screen.blit(E1.newimage,rect)
+            
             pygame.display.update()
-            E1.stop()
+        if  current_time - punch_time_E > 200 and current_time - punch_time_E < 400 and P1.isdead == False and E1.isdead == False:
+            E1.reset_sprite()
+            pygame.display.update()
+    elif E1.isdead == False and P1.isdead == False:
+        E1.move()
+
     
-    
-    
-    #elif E1.isdead == False and P1.isdead == False:
-        #E1.move()
+    if  current_time - punch_time_E > 200 and pygame.sprite.collide_rect(P1, E1) == False and P1.isdead == False and E1.isdead == False:
+        E1.reset_sprite()
     
     if E1_Health <= 0:
         E1.death()
 
+    #Throwing Objects loop
+    if chairthrow == 1:
+        Chair1.throw(chair_mouse_x,chair_mouse_y)
+        if Chair1.rect.x == chair_mouse_x and Chair1.rect.y == chair_mouse_y:
+            chairthrow = 0
+        
     if Player_Health <= 0:
         P1.playerdeath()
         E1.stop()

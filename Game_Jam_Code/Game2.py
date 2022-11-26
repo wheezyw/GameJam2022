@@ -321,37 +321,37 @@ class Stationary(pygame.sprite.Sprite):
         
        
         angle_y = math.sin(angle)
-        print(chair_mouse_x)
-        print(chair_mouse_y)
-        print(angle_x)
-        print(angle_y)
+        #print(chair_mouse_x)
+        #print(chair_mouse_y)
+        #print(angle_x)
+       # print(angle_y)
         if self.rect.x < chair_mouse_x-10:
             self.rect.move_ip(angle_x * 10, 0)
             #Chair1.rect.move_ip(5, 0)
-            print("moving right")
-            print(Chair1.rect.x)
-            print(chair_mouse_x)
+            #print("moving right")
+           # print(Chair1.rect.x)
+            #print(chair_mouse_x)
         elif self.rect.x > chair_mouse_x+10:
             self.rect.move_ip(angle_x * 10, 0)
             
             #Chair1.rect.move_ip(-5, 0)
-            print("moving left")
-            print(Chair1.rect.x)
-            print(chair_mouse_x)
+            #print("moving left")
+            #print(Chair1.rect.x)
+            #print(chair_mouse_x)
         elif self.rect.x == range(chair_mouse_x-10, chair_mouse_x+10):
             self.rect.move_ip(0,0)
         if self.rect.y > chair_mouse_y+10:
             self.rect.move_ip(0, angle_y * 10)
             #Chair1.rect.move_ip(0, 5)
-            print("moving up")
-            print(Chair1.rect.y)
-            print(chair_mouse_y)
+            #print("moving up")
+            #print(Chair1.rect.y)
+            #print(chair_mouse_y)
         elif self.rect.y < chair_mouse_y-10:
             self.rect.move_ip(0, angle_y * 10)
             #Chair1.rect.move_ip(0, -5)
-            print("moving down")
-            print(Chair1.rect.y)
-            print(chair_mouse_y)
+            #print("moving down")
+            #print(Chair1.rect.y)
+            #print(chair_mouse_y)
         elif self.rect.y == range(chair_mouse_y-10, chair_mouse_y+10):
             self.rect.move_ip(0,0)
         
@@ -419,6 +419,7 @@ while main:
     bg_rect = bg.get_rect()
     screen.blit(bg, bg_rect)
     current_time = pygame.time.get_ticks()
+
     for event in pygame.event.get():
             if event.type == pygame.locals.QUIT:
                 pygame.quit()
@@ -431,16 +432,22 @@ while main:
                 for held_chair in [Chair1,Chair2,Chair3,Chair4,Chair5,Chair6,Chair7,Chair8]:
                     if pygame.sprite.collide_rect(P1, held_chair) and holding_chair == 0:
                         current_chair = held_chair
+                        print(current_chair.rect.center)
+                        print(P1.rect.center)
                         if Sprite_number == 0:
                             Sprite_number = 1
                             oldchair_rect_center = held_chair.rect.center
                             held_chair.image = pygame.image.load("Images/clear_block.png")
                             holding_chair = 1
+                            held_chair.rect.center = (SCREEN_WIDTH * 2, SCREEN_HEIGHT * 2)
+                            print(current_chair.rect.center)
+                            break
                     elif Sprite_number == 1:
                         Sprite_number = 0
+                        holding_chair = 0
                         held_chair.image = chair
                         held_chair.rect.center = (P1.rect.x + 50, P1.rect.y)
-                        holding_chair = 0
+                        break
 
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 2 and P1.isdead == False:
                 if Sprite_number == 1:
@@ -449,9 +456,9 @@ while main:
                     current_chair.image = chair
                     chair_mouse_x, chair_mouse_y = pygame.mouse.get_pos()
                     
-                    chair_rel_x, chair_rel_y = chair_mouse_x - Chair1.rect.x, chair_mouse_y - Chair1.rect.y
+                    chair_rel_x, chair_rel_y = chair_mouse_x - P1.rect.x, chair_mouse_y - P1.rect.y
                     chairthrow = 1
-                    
+                    holding_chair = 0
     
     
     
@@ -475,7 +482,6 @@ while main:
         E1.look()
     if E1.isdead == True:
         E1.draw(screen)
-    # Add Player Health in the top right corner
     # Make Player Health Display
     font = pygame.font.Font("freesansbold.ttf", 18)
     text = font.render("Player Health: " + str(Player_Health), True, BLACK, WHITE)
@@ -547,8 +553,8 @@ while main:
 
     #Throwing Objects loop
     if chairthrow == 1:
-        Chair1.throw(chair_rel_x,chair_rel_y,chair_mouse_x, chair_mouse_y )
-        if Chair1.rect.x == chair_mouse_x and Chair1.rect.y == chair_mouse_y:
+        current_chair.throw(chair_rel_x,chair_rel_y,chair_mouse_x, chair_mouse_y )
+        if current_chair.rect.x == chair_mouse_x and current_chair.rect.y == chair_mouse_y:
             chairthrow = 0
         
     if Player_Health <= 0:

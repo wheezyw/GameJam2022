@@ -17,6 +17,7 @@ P1_Punched = 1
 bg = pygame.image.load("Images/stage.png")
 chairthrow = 0
 holding_chair = 0
+Game_Over = 0
 
 # Making colors, the numbers correspond to RGB values
 BLACK = pygame.Color(0, 0, 0)         # Black
@@ -100,7 +101,7 @@ class Player(pygame.sprite.Sprite):
             if pressed_keys[K_s]:
                 self.rect.move_ip(0,5)
 
-         
+          
         if self.rect.left > 0:
               if pressed_keys[K_a]:
                   self.rect.move_ip(-5, 0)
@@ -212,10 +213,10 @@ class Enemy(pygame.sprite.Sprite):
          self.rect.move_ip(0,0)
 
 
-    def look(self):
+    def look(self, object):
 
         # Look at the player that the enemy is attacking 
-        dirvect = pygame.math.Vector2(self.rect.x - self.player.rect.x, self.rect.y - self.player.rect.y)
+        dirvect = pygame.math.Vector2(self.rect.x - object.rect.x, self.rect.y - object.rect.y)
         angle = (180 / math.pi) * math.atan2(dirvect.x, dirvect.y) + 90
         self.newimage = pygame.transform.rotate(self.image, int(angle))
         rect = self.image.get_rect(center=self.rect.center)   
@@ -358,43 +359,105 @@ class Stationary(pygame.sprite.Sprite):
         
 
 P1 = Player()
+
+
 E1 = Enemy(P1, (400, 600))
 E1_Health = 100
 E2 = Enemy(P1, (600, 600))
 E2_Health = 100
+
+
 chair = pygame.image.load("Images/Chair_sprite.png")
 chair = pygame.transform.scale(chair, (50,50))
 chair_left = pygame.transform.rotate(chair, 90)
 chair_right = pygame.transform.rotate(chair, -90)
 Chair1 = Stationary((225, 250), chair_right )
+Chair1_pos = (225, 250)
 Chair2 = Stationary((225, 350), chair_right )
+Chair2_pos = (225, 350)
 Chair3 = Stationary((225, 450), chair_right )
+Chair3_pos = (225, 450)
 Chair4 = Stationary((225, 550), chair_right )
+Chair4_pos = (225, 550)
 Chair5 = Stationary((385, 250), chair_left )
+Chair5_pos = (385, 250)
 Chair6 = Stationary((385, 350), chair_left )
+Chair6_pos = (385, 350)
 Chair7 = Stationary((385, 450), chair_left )
+Chair7_pos = (385, 450)
 Chair8 = Stationary((385, 550), chair_left )
+Chair8_pos = (385, 550)
+
+Chair9 = Stationary((625, 250), chair_right )
+Chair9_pos = (625, 250)
+Chair10 = Stationary((625, 350), chair_right )
+Chair10_pos = (625, 350)
+Chair11 = Stationary((625, 450), chair_right )
+Chair11_pos = (625, 450)
+Chair12 = Stationary((625, 550), chair_right )
+Chair12_pos = (625, 550)
+Chair13 = Stationary((785, 250), chair_left )
+Chair13_pos = (785, 250)
+Chair14 = Stationary((785, 350), chair_left )
+Chair14_pos = (785, 350)
+Chair15 = Stationary((785, 450), chair_left )
+Chair15_pos = (785, 450)
+Chair16 = Stationary((785, 550), chair_left )
+Chair16_pos = (785, 550)
+
 table = pygame.image.load("Images/Table.png")
 table = pygame.transform.scale(table, (400,400))
 Table1 = Stationary((300, 400), table)
+Table1_left = 270
+Table1_right = 320
+Table1_top = 235
+Table1_bottom = 550
 Table2 = Stationary((700, 400), table)
+Table2_left = 670
+Table2_right = 720
+Table2_top = 235
+Table2_bottom = 550
+
+candle = pygame.image.load("Images/candle_stick.png")
+candle = pygame.transform.scale(candle, (100,100))
+Candle1 = Stationary((305, 450), candle)
+Candle2 = Stationary((305, 550), candle)
+Candle3 = Stationary((305, 350), candle)
+Candle4 = Stationary((305, 250), candle)
+
+Candle5 = Stationary((705, 450), candle)
+Candle6 = Stationary((705, 550), candle)
+Candle7 = Stationary((705, 350), candle)
+Candle8 = Stationary((705, 250), candle)
+
+bottle = pygame.image.load("Images/Bottle.png")
+bottle = pygame.transform.scale(bottle, (150,150))
+Bottle1 = Stationary((400, 500), bottle)
+
+pot = pygame.image.load("Images/Pot.png")
+pot = pygame.transform.scale(pot, (150,150))
+Pot1 = Stationary((400, 550), pot)
+
+turkey = pygame.image.load("Images/Turkey.png")
+turkey = pygame.transform.scale(turkey, (250,250))
+Turkey1 = Stationary((400, 600), turkey)
+
+
+
 No_Button = Stationary ((700, 575), pygame.image.load("Images/No_3.png"))
 Yes_Button = Stationary((300, 575), pygame.image.load("Images/Yes_4.png"))
-#Creating Sprites Groups
-enemies = pygame.sprite.Group()
-enemies.add(E1, E2)
-chairs_group = pygame.sprite.Group()
-chairs_group.add(Chair1,Chair2,Chair3,Chair4,Chair5,Chair6,Chair7,Chair8)
-chairs = [Chair1,Chair2,Chair3,Chair4,Chair5,Chair6,Chair7,Chair8]
-tables = pygame.sprite.Group()
-tables.add(Table1, Table2)
-all_sprites = pygame.sprite.Group()
-all_sprites.add(P1, enemies, chairs, tables)
 
+#Creating Sprites Groups
+enemies = [E1, E2]
+chairs = [Chair1,Chair2,Chair3,Chair4,Chair5,Chair6,Chair7,Chair8,Chair9, Chair10, Chair11, Chair12, Chair13, Chair14, Chair15, Chair16]
+candles = [Candle1, Candle2, Candle3, Candle4, Candle5, Candle6, Candle7, Candle8]
+tables = [Table1, Table2]
+characters = [P1, E1]
 
 
 # Make reset event 
 def Game_reset():
+    
     P1.rect.center = (160, 520)
 
     E1.rect.center=  (400, 600)
@@ -405,10 +468,42 @@ def Game_reset():
     E2.image = pygame.image.load("Images/Enemy.png")
     E2.isdead = False
 
-    Chair1.rect.center = (160, 420)
-    Chair1.image = pygame.image.load("Images/Chair_sprite.png")
+    Chair1.rect.center=  Chair1_pos
+    Chair1.image = chair_right
+    Chair2.rect.center=  Chair2_pos
+    Chair2.image = chair_right
+    Chair3.rect.center=  Chair3_pos
+    Chair3.image = chair_right
+    Chair4.rect.center=  Chair4_pos
+    Chair4.image = chair_right
 
+    Chair5.rect.center=  Chair5_pos
+    Chair5.image = chair_left
+    Chair6.rect.center=  Chair6_pos
+    Chair6.image = chair_left
+    Chair7.rect.center=  Chair7_pos
+    Chair7.image = chair_left
+    Chair8.rect.center=  Chair8_pos
+    Chair8.image = chair_left
 
+     #An attempt to be smart, that failed. Doing this the manual way.
+    '''for i in [Chair1,Chair2,Chair3,Chair4]:
+        print(i)
+        j = 0
+        print (j)
+        k = [Chair1_pos,Chair2_pos,Chair3_pos,Chair4_pos]
+        i.image = chair_right
+        i.rect.center =  k[j]
+        j+=1
+
+    for x in [Chair5,Chair6,Chair7,Chair8]:
+        print(x)
+        y = 0
+        print (y)
+        z = [Chair5_pos,Chair6_pos,Chair7_pos,Chair8_pos]
+        x.image = chair_left
+        x.rect.center =  z[y]
+        y+=1'''
 
 
 
@@ -426,10 +521,10 @@ while main:
                 sys.exit()
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 1 and P1.isdead == False:
                 punch_time = pygame.time.get_ticks()
-                
-            
+                print(Table1.rect.left )
+                print(P1.rect.right - Table1.rect.left)
             elif event.type == event.type == MOUSEBUTTONDOWN and event.button == 3 and P1.isdead == False:
-                for held_chair in [Chair1,Chair2,Chair3,Chair4,Chair5,Chair6,Chair7,Chair8]:
+                for held_chair in chairs:
                     if pygame.sprite.collide_rect(P1, held_chair) and holding_chair == 0:
                         current_chair = held_chair
                         print(current_chair.rect.center)
@@ -462,16 +557,18 @@ while main:
     
     
     
-    Table1.draw(screen)
-    Table2.draw(screen)
-    Chair1.draw(screen)
-    Chair2.draw(screen)
-    Chair3.draw(screen)
-    Chair4.draw(screen)
-    Chair5.draw(screen)
-    Chair6.draw(screen)
-    Chair7.draw(screen)
-    Chair8.draw(screen)
+    for x in tables:
+        x.draw(screen)
+
+    for x in chairs:
+        x.draw(screen)
+
+    for x in candles:
+        x.draw(screen)
+
+    Bottle1.draw(screen)
+    Pot1.draw(screen) 
+    Turkey1.draw(screen)
 
     if P1.isdead == False:
         P1.look()
@@ -479,7 +576,7 @@ while main:
     else:
         P1.draw(screen)
     if E1.isdead == False:
-        E1.look()
+        E1.look(P1)
     if E1.isdead == True:
         E1.draw(screen)
     # Make Player Health Display
@@ -489,6 +586,25 @@ while main:
     textRect.center = (100, 100)
     screen.blit(text, textRect)
     
+    for x in characters:
+        if x.rect.right>Table1_left- 10 and x.rect.right< Table1_left+ 10  and (x.rect.top < Table1_bottom and x.rect.bottom > Table1_top):
+            x.rect.move_ip(-5, 0)
+        if x.rect.left<Table1_right + 10 and x.rect.left> Table1_right-10 and (x.rect.top < Table1_bottom and x.rect.bottom > Table1_top):
+            x.rect.move_ip(5, 0)
+        if x.rect.bottom<Table1_top + 10 and x.rect.bottom> Table1_top-10 and (x.rect.left < Table1_right and x.rect.right > Table1_left):
+            x.rect.move_ip(0, -5)
+        if x.rect.top>Table1_bottom - 10 and x.rect.top< Table1_bottom+10 and (x.rect.left < Table1_right and x.rect.right > Table1_left):
+            x.rect.move_ip(0, 5)
+
+        if x.rect.right>Table2_left- 10 and x.rect.right< Table2_left+ 10  and (x.rect.top < Table2_bottom and x.rect.bottom > Table2_top):
+            x.rect.move_ip(-5, 0)
+        if x.rect.left<Table2_right + 10 and x.rect.left> Table2_right-10 and (x.rect.top < Table2_bottom and x.rect.bottom > Table2_top):
+            x.rect.move_ip(5, 0)
+        if x.rect.bottom<Table2_top + 10 and x.rect.bottom> Table2_top-10 and (x.rect.left < Table2_right and x.rect.right > Table2_left):
+            x.rect.move_ip(0, -5)
+        if x.rect.top>Table2_bottom - 10 and x.rect.top< Table2_bottom+10 and (x.rect.left < Table2_right and x.rect.right > Table2_left):
+            x.rect.move_ip(0, 5)
+
     if current_time - punch_time < 150 and P1_Punched == 0:
         P1.beforePunch()
     if current_time - punch_time > 150 and current_time - punch_time < 300 and P1_Punched == 0:
@@ -533,7 +649,6 @@ while main:
         if current_time - punch_time_E > 800 and P1.isdead == False and E1.isdead == False:
             E1.punch()
             punch_time_E = pygame.time.get_ticks()
-            Game_Over_Time = pygame.time.get_ticks()
             P1.knockback()
             E1.stop()
             Player_Health -= 10
@@ -541,24 +656,37 @@ while main:
         if  current_time - punch_time_E > 200 and current_time - punch_time_E < 400 and P1.isdead == False and E1.isdead == False:
             E1.reset_sprite()
             pygame.display.update()
-    #elif E1.isdead == False and P1.isdead == False:
-        #E1.move()
+    elif E1.isdead == False and P1.isdead == False:
+        E1.move()
 
     
     if  current_time - punch_time_E > 200 and pygame.sprite.collide_rect(P1, E1) == False and P1.isdead == False and E1.isdead == False:
         E1.reset_sprite()
     
-    if E1_Health <= 0:
-        E1.death()
+    if Player_Health <= 0 and Game_Over == 0: 
+        P1.playerdeath()
+        Game_Over_Time = pygame.time.get_ticks()
+        Game_Over = 1
 
+    if E1_Health <= 0 and Game_Over == 0:
+        E1.death()
+        Game_Over_Time = pygame.time.get_ticks()
+        Game_Over = 1
     #Throwing Objects loop
     if chairthrow == 1:
         current_chair.throw(chair_rel_x,chair_rel_y,chair_mouse_x, chair_mouse_y )
         if current_chair.rect.x == chair_mouse_x and current_chair.rect.y == chair_mouse_y:
             chairthrow = 0
+    
+    for held_chair in chairs:
+        if pygame.sprite.collide_rect(held_chair, E1) and chairthrow == 1 and held_chair == current_chair:
+            chairthrow = 0
+            E1.knockback()
+            E1_Health -= 10
+    
+    
         
-    if Player_Health <= 0:
-        P1.playerdeath()
+    if Game_Over == 1:
         E1.stop()
         print(current_time - Game_Over_Time)
         if current_time - Game_Over_Time > 1000:
@@ -587,9 +715,12 @@ while main:
                     Player_Health = 100
                     E1_Health = 100
                     Sprite_number = 0
+                    chairthrow = 0
+                    Game_Over = 0
                     punch_time_E = pygame.time.get_ticks()
                     P1.isdead = False
                     main = True
+                    
             for event in pygame.event.get():
                 if event.type == pygame.locals.QUIT:
                     pygame.quit()
